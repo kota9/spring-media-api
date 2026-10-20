@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:8080
+
+### 1. 상품 등록
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "키보드",
+  "price": 50000
+}
+
+> {%
+    client.global.set("productId", response.body.id);
+%}
+
+### 2. 상품 전체 조회
+GET {{baseUrl}}/api/products
+
+### 3. 상품 단건 조회
+GET {{baseUrl}}/api/products/{{productId}}
+
+### 4. 상품 수정
+PUT {{baseUrl}}/api/products/{{productId}}
+Content-Type: application/json
+
+{
+  "name": "기계식 키보드",
+  "price": 75000
+}
+
+### 5. 수정 결과 조회
+GET {{baseUrl}}/api/products/{{productId}}
+
+### 6. 상품 삭제
+DELETE {{baseUrl}}/api/products/{{productId}}
+
+### 7. 삭제한 상품 조회 (404 예상)
+GET {{baseUrl}}/api/products/{{productId}}
