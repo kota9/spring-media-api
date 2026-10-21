@@ -24,6 +24,8 @@ configurations {
 dependencies {
     // Spring Web (Spring Boot 4부터 spring-boot-starter-web -> spring-boot-starter-webmvc)
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-jackson'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Spring Boot Test (JUnit 5, AssertJ, Mockito 등 포함)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
