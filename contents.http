@@ -1,0 +1,58 @@
+### API base URL. Start the Spring Boot application before running these requests.
+@baseUrl = http://localhost:8080
+
+### 1. Create content. Copy the returned id into @contentId below.
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "REST API 학습",
+  "description": "Spring Boot CRUD 구현"
+}
+
+### Set this value to the id from the create response before running the remaining requests.
+@contentId = 2
+
+### 2. List all content
+GET {{baseUrl}}/api/contents
+
+### 3. Read one content
+GET {{baseUrl}}/api/contents/{{contentId}}
+
+### 4. Replace both fields (PUT requires title and description)
+PUT {{baseUrl}}/api/contents/{{contentId}}
+Content-Type: application/json
+
+{
+  "title": "REST API 전체 수정",
+  "description": "PUT으로 모든 필드를 교체합니다"
+}
+
+### 5. Update only the title (omitted description keeps its previous value)
+PATCH {{baseUrl}}/api/contents/{{contentId}}
+Content-Type: application/json
+
+{
+  "title": "PATCH 제목만 변경"
+}
+
+### 6. Confirm the description was preserved by PATCH
+GET {{baseUrl}}/api/contents/{{contentId}}
+
+### 7. Delete content (204 response has no body)
+DELETE {{baseUrl}}/api/contents/{{contentId}}
+
+### 8. Missing ID returns 404 with a JSON error body
+GET {{baseUrl}}/api/contents/999999999
+
+### 9. Blank title returns 400 with a JSON error body
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "description": "제목 검증 오류"
+}
+
+### PATCH rules: omit unchanged fields; explicit null and an empty patch return 400.
+### Requests run in order; create a fresh content and update @contentId before rerunning after delete.
