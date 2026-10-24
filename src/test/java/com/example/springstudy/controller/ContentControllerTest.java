@@ -16,6 +16,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import com.example.springstudy.service.ContentService;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 
 @SpringBootTest
@@ -23,6 +28,9 @@ import org.springframework.test.web.servlet.MvcResult;
 class ContentControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoSpyBean
+    private ContentService contentService;
 
     @Test
     void createReadPutPatchAndDeleteContent() throws Exception {
@@ -70,13 +78,23 @@ class ContentControllerTest {
 
     @Test
     void rejectsInvalidCreateAndPatchRequests() throws Exception {
+        clearInvocations(contentService);
         mockMvc.perform(post("/api/contents")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"title":"   ","description":"설명"}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("400"));
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("요청 값이 올바르지 않습니다."))
+                .andExpect(jsonPath("$.errors.title[0]").value("제목은 필수입니다."));
+        verify(contentService, never()).create(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+
+        mockMvc.perform(post("/api/contents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"" + "x".repeat(101) + "\",\"description\":\"설명\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.title[0]").value("제목은 100자 이하여야 합니다."));
 
         MvcResult result = mockMvc.perform(post("/api/contents")
                         .contentType(MediaType.APPLICATION_JSON)

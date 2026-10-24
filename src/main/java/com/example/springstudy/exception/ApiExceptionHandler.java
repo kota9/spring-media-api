@@ -1,7 +1,8 @@
 package com.example.springstudy.exception;
 
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.TreeMap;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -9,7 +10,6 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,11 +38,17 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class,
             ConstraintViolationException.class})
-    public ResponseEntity<Map<String, String>> handleBadRequest(Exception exception, HttpServletRequest request) {
+    public ResponseEntity<?> handleBadRequest(Exception exception, HttpServletRequest request) {
         String message = "Invalid request";
         if (exception instanceof MethodArgumentNotValidException validationException) {
-            message = validationException.getBindingResult().getFieldErrors().stream()
-                    .map(this::fieldErrorMessage).collect(Collectors.joining(", "));
+            Map<String, List<String>> errors = new TreeMap<>();
+            validationException.getBindingResult().getFieldErrors().forEach(error ->
+                    errors.computeIfAbsent(error.getField(), field -> new java.util.ArrayList<>())
+                            .add(error.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "code", "VALIDATION_ERROR",
+                    "message", "요청 값이 올바르지 않습니다.",
+                    "errors", errors));
         } else if (exception instanceof HttpMessageNotReadableException) {
             message = "Request body is missing or malformed";
         }
@@ -52,10 +58,6 @@ public class ApiExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleUnexpected(HttpServletRequest request) {
         return error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request);
-    }
-
-    private String fieldErrorMessage(FieldError error) {
-        return error.getField() + " " + error.getDefaultMessage();
     }
 
     private ResponseEntity<Map<String, String>> error(HttpStatus status, String message, HttpServletRequest request) {

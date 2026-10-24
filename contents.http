@@ -56,3 +56,30 @@ Content-Type: application/json
 
 ### PATCH rules: omit unchanged fields; explicit null and an empty patch return 400.
 ### Requests run in order; create a fresh content and update @contentId before rerunning after delete.
+
+### 10. Validation failure: blank title returns VALIDATION_ERROR and errors.title
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "description": "설명"
+}
+
+### 11. Validation failure: title longer than 100 characters returns 400
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "description": "설명"
+}
+
+### 12. Normal valid content request returns 201
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "Validation 정상 요청",
+  "description": "필수 내용"
+}
