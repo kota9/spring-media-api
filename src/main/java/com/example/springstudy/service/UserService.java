@@ -7,14 +7,17 @@ import org.springframework.stereotype.Service;
 import com.example.springstudy.domain.User;
 import com.example.springstudy.dto.UserRequest;
 import com.example.springstudy.exception.UserNotFoundException;
+import com.example.springstudy.repository.CommentRepository;
 import com.example.springstudy.repository.UserRepository;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CommentRepository commentRepository) {
         this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
     }
 
     public List<User> findAll() {
@@ -36,6 +39,7 @@ public class UserService {
 
     public void delete(Long userId) {
         findById(userId);
+        commentRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 }

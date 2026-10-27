@@ -8,14 +8,17 @@ import com.example.springstudy.domain.Content;
 import com.example.springstudy.dto.ContentPatchRequest;
 import com.example.springstudy.exception.ContentNotFoundException;
 import com.example.springstudy.exception.InvalidContentPatchException;
+import com.example.springstudy.repository.CommentRepository;
 import com.example.springstudy.repository.ContentRepository;
 
 @Service
 public class ContentService {
     private final ContentRepository contentRepository;
+    private final CommentRepository commentRepository;
 
-    public ContentService(ContentRepository contentRepository) {
+    public ContentService(ContentRepository contentRepository, CommentRepository commentRepository) {
         this.contentRepository = contentRepository;
+        this.commentRepository = commentRepository;
     }
 
     public List<Content> findAll() {
@@ -61,6 +64,7 @@ public class ContentService {
 
     public void delete(Long id) {
         findById(id);
+        commentRepository.deleteByContentId(id);
         contentRepository.deleteById(id);
     }
 }

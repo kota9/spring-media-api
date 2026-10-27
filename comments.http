@@ -1,0 +1,103 @@
+@baseUrl = http://localhost:8080
+@userId = 1
+@contentId = 1
+@commentId = 1
+@userEmail = comment.user@example.com
+
+### 1. 작성자 생성 (201). 재실행 시 이메일을 바꾸고, 응답 ID와 다르면 위의 @userId 값을 변경하세요.
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Comment User",
+  "email": "{{userEmail}}"
+}
+
+### 2. 게시글 생성 (201). 응답 ID와 다르면 위의 @contentId 값을 변경하세요.
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{
+  "title": "댓글 테스트 게시글",
+  "description": "댓글 API 테스트를 위한 게시글입니다."
+}
+
+### 3. 댓글 생성 (201). 응답 ID와 다르면 위의 @commentId 값을 변경하세요.
+POST {{baseUrl}}/api/contents/{{contentId}}/comments
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "body": "첫 번째 댓글입니다."
+}
+
+### 4. 게시글별 댓글 목록 조회 (200)
+GET {{baseUrl}}/api/contents/{{contentId}}/comments
+
+### 5. 댓글 상세 조회 (200)
+GET {{baseUrl}}/api/comments/{{commentId}}
+
+### 6. 댓글 수정 (200)
+PUT {{baseUrl}}/api/comments/{{commentId}}
+Content-Type: application/json
+
+{
+  "body": "수정된 댓글입니다."
+}
+
+### 7. 댓글 수정 결과 확인 (200)
+GET {{baseUrl}}/api/comments/{{commentId}}
+
+### 8. 빈 댓글 내용 (400, INVALID_REQUEST)
+PUT {{baseUrl}}/api/comments/{{commentId}}
+Content-Type: application/json
+
+{
+  "body": "   "
+}
+
+### 9. 존재하지 않는 게시글에 댓글 생성 (404, CONTENT_NOT_FOUND)
+POST {{baseUrl}}/api/contents/999999999/comments
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "body": "없는 게시글의 댓글"
+}
+
+### 10. 존재하지 않는 작성자로 댓글 생성 (404, USER_NOT_FOUND)
+POST {{baseUrl}}/api/contents/{{contentId}}/comments
+Content-Type: application/json
+
+{
+  "userId": 999999999,
+  "body": "없는 작성자의 댓글"
+}
+
+### 11. 존재하지 않는 댓글 조회 (404, COMMENT_NOT_FOUND)
+GET {{baseUrl}}/api/comments/999999999
+
+### 12. 댓글 삭제 (204)
+DELETE {{baseUrl}}/api/comments/{{commentId}}
+
+### 13. 삭제된 댓글 조회 (404, COMMENT_NOT_FOUND)
+GET {{baseUrl}}/api/comments/{{commentId}}
+
+### 14. 연쇄 삭제 확인용 댓글 생성 (201)
+POST {{baseUrl}}/api/contents/{{contentId}}/comments
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "body": "게시글 삭제 시 함께 삭제되는 댓글"
+}
+
+### 생성 응답의 댓글 ID로 @commentId를 변경한 뒤 게시글 삭제를 실행하세요.
+### 15. 게시글 삭제 (204, 연결 댓글도 함께 삭제)
+DELETE {{baseUrl}}/api/contents/{{contentId}}
+
+### 16. 연쇄 삭제된 댓글 조회 (404, COMMENT_NOT_FOUND)
+GET {{baseUrl}}/api/comments/{{commentId}}
+
+### 참고: userId와 contentId는 생성 응답의 ID에 맞춰 상단에서 설정하세요.
+### 요청으로 전달한 userId는 학습용 존재 여부 검사이며 인증 정보가 아닙니다.

@@ -26,10 +26,16 @@ public class ApiExceptionHandler {
         return error(ErrorCode.CONTENT_NOT_FOUND, request);
     }
 
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleCommentNotFound(HttpServletRequest request) {
+        return error(ErrorCode.COMMENT_NOT_FOUND, request);
+    }
+
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleCategoryNotFound(HttpServletRequest request) {
         return error(ErrorCode.CATEGORY_NOT_FOUND, request);
     }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleUserNotFound(HttpServletRequest request) {
         return error(ErrorCode.USER_NOT_FOUND, request);
