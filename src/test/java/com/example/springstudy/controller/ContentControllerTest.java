@@ -142,6 +142,16 @@ class ContentControllerTest {
                         .content("{\"title\":null}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_CONTENT_PATCH"));
+        mockMvc.perform(patch("/api/contents/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"description\":\"   \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_CONTENT_PATCH"));
+        mockMvc.perform(patch("/api/contents/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"" + "x".repeat(101) + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_CONTENT_PATCH"));
         mockMvc.perform(get("/api/contents/999999999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("CONTENT_NOT_FOUND"));

@@ -44,13 +44,14 @@ public class ContentService {
         String title = existing.title();
         String description = existing.description();
         if (request.hasTitle()) {
-            if (!(request.getTitle() instanceof String patchedTitle) || patchedTitle.isBlank()) {
-                throw new InvalidContentPatchException("제목은 빈 값으로 지정할 수 없습니다.");
+            if (!(request.getTitle() instanceof String patchedTitle)
+                    || patchedTitle.isBlank() || patchedTitle.length() > 100) {
+                throw new InvalidContentPatchException("제목은 필수이며 100자 이하여야 합니다.");
             }
             title = patchedTitle;
         }
         if (request.hasDescription()) {
-            if (!(request.getDescription() instanceof String patchedDescription)) {
+            if (!(request.getDescription() instanceof String patchedDescription) || patchedDescription.isBlank()) {
                 throw new InvalidContentPatchException("내용은 문자열이어야 하며 빈 값일 수 없습니다.");
             }
             description = patchedDescription;
