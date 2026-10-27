@@ -1,0 +1,74 @@
+@baseUrl = http://localhost:8080
+@categoryId = 1
+@categoryName = day27-category
+
+### 1. 카테고리 생성 (201). 응답 ID가 1이 아니면 위의 @categoryId를 응답 ID로 변경하세요.
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "{{categoryName}}",
+  "description": "학습용 카테고리"
+}
+
+### 2. 카테고리 목록 조회 (200)
+GET {{baseUrl}}/api/categories
+
+### 3. 카테고리 상세 조회 (200)
+GET {{baseUrl}}/api/categories/{{categoryId}}
+
+### 4. 설명 없이 카테고리 생성 (201, description은 선택)
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "설명 없는 카테고리"
+}
+
+### 5. 빈 이름으로 생성 시도 (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "   "
+}
+
+### 6. 100자를 초과하는 이름으로 생성 시도 (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+
+### 7. 카테고리 수정 (200)
+PUT {{baseUrl}}/api/categories/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "수정된 카테고리",
+  "description": "수정된 설명"
+}
+
+### 8. 수정 결과 확인 (200)
+GET {{baseUrl}}/api/categories/{{categoryId}}
+
+### 9. 없는 카테고리 조회 (404, CATEGORY_NOT_FOUND)
+GET {{baseUrl}}/api/categories/999999999
+
+### 10. 없는 카테고리 수정 (404, CATEGORY_NOT_FOUND)
+PUT {{baseUrl}}/api/categories/999999999
+Content-Type: application/json
+
+{
+  "name": "존재하지 않는 카테고리"
+}
+
+### 11. 카테고리 삭제 (204)
+DELETE {{baseUrl}}/api/categories/{{categoryId}}
+
+### 12. 삭제 결과 확인 (404, CATEGORY_NOT_FOUND)
+GET {{baseUrl}}/api/categories/{{categoryId}}
+
+### 13. 없는 카테고리 삭제 (404, CATEGORY_NOT_FOUND)
+DELETE {{baseUrl}}/api/categories/999999999
