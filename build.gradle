@@ -44,3 +44,7 @@ tasks.named('test') {
             '-Xshare:off'
     ]
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
