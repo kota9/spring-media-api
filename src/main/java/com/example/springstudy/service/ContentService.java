@@ -38,20 +38,20 @@ public class ContentService {
     public Content patch(Long id, ContentPatchRequest request) {
         Content existing = findById(id);
         if (!request.hasTitle() && !request.hasDescription()) {
-            throw new InvalidContentPatchException("At least one field must be provided");
+            throw new InvalidContentPatchException("수정할 항목을 하나 이상 입력해야 합니다.");
         }
 
         String title = existing.title();
         String description = existing.description();
         if (request.hasTitle()) {
             if (!(request.getTitle() instanceof String patchedTitle) || patchedTitle.isBlank()) {
-                throw new InvalidContentPatchException("title must be a non-blank string and cannot be null");
+                throw new InvalidContentPatchException("제목은 빈 값으로 지정할 수 없습니다.");
             }
             title = patchedTitle;
         }
         if (request.hasDescription()) {
             if (!(request.getDescription() instanceof String patchedDescription)) {
-                throw new InvalidContentPatchException("description must be a string and cannot be null");
+                throw new InvalidContentPatchException("내용은 문자열이어야 하며 빈 값일 수 없습니다.");
             }
             description = patchedDescription;
         }

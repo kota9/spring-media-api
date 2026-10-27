@@ -7,6 +7,6 @@ package com.example.springstudy.exception;
  */
 public class ContentNotFoundException extends RuntimeException {
     public ContentNotFoundException(Long id) {
-        super("Content not found: " + id);
+        super("콘텐츠를 찾을 수 없습니다. id=" + id);
     }
 }

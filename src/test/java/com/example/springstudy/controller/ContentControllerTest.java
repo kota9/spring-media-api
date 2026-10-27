@@ -56,6 +56,12 @@ class ContentControllerTest {
 
         mockMvc.perform(put("/api/contents/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid title\",\"description\":\"   \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+
+        mockMvc.perform(put("/api/contents/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"title":"전체 수정","description":"PUT 설명"}
                                 """))
@@ -68,6 +74,11 @@ class ContentControllerTest {
                         .content("""
                                 {"title":"부분 수정"}
                                 """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("부분 수정"))
+                .andExpect(jsonPath("$.description").value("PUT 설명"));
+
+        mockMvc.perform(get("/api/contents/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("부분 수정"))
                 .andExpect(jsonPath("$.description").value("PUT 설명"));
@@ -96,6 +107,16 @@ class ContentControllerTest {
                 .andExpect(jsonPath("$.path").value("/api/contents"));
         verify(contentService, never()).create(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
 
+        mockMvc.perform(post("/api/contents").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid title\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+
+        mockMvc.perform(post("/api/contents").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid title\",\"description\":\"   \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+
         mockMvc.perform(post("/api/contents")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"" + "x".repeat(101) + "\",\"description\":\"설명\"}"))
@@ -122,6 +143,13 @@ class ContentControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_CONTENT_PATCH"));
         mockMvc.perform(get("/api/contents/999999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("CONTENT_NOT_FOUND"));
+        mockMvc.perform(put("/api/contents/999999999").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid title\",\"description\":\"Valid description\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("CONTENT_NOT_FOUND"));
+        mockMvc.perform(delete("/api/contents/999999999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("CONTENT_NOT_FOUND"));
 

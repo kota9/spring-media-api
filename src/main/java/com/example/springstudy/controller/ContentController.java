@@ -46,7 +46,7 @@ public class ContentController {
     @PostMapping
     public ResponseEntity<ContentResponse> create(@Valid @RequestBody ContentCreateRequest request) {
         if (request == null) {
-            throw new InvalidContentPatchException("Request body must be a JSON object");
+            throw new InvalidContentPatchException("요청 본문은 JSON 객체여야 합니다.");
         }
         Content created = contentService.create(request.title(), request.description());
         return ResponseEntity.created(URI.create("/api/contents/" + created.id()))
@@ -56,7 +56,7 @@ public class ContentController {
     @PutMapping("/{id}")
     public ContentResponse update(@PathVariable Long id, @Valid @RequestBody ContentUpdateRequest request) {
         if (request == null) {
-            throw new InvalidContentPatchException("Request body must be a JSON object");
+            throw new InvalidContentPatchException("요청 본문은 JSON 객체여야 합니다.");
         }
         return ContentResponse.from(contentService.update(id, request.title(), request.description()));
     }
@@ -64,7 +64,7 @@ public class ContentController {
     @PatchMapping("/{id}")
     public ContentResponse patch(@PathVariable Long id, @RequestBody ContentPatchRequest request) {
         if (request == null) {
-            throw new InvalidContentPatchException("Request body must be a JSON object");
+            throw new InvalidContentPatchException("요청 본문은 JSON 객체여야 합니다.");
         }
         return ContentResponse.from(contentService.patch(id, request));
     }
