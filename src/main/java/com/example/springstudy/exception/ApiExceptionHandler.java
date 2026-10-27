@@ -26,6 +26,16 @@ public class ApiExceptionHandler {
         return error(ErrorCode.CONTENT_NOT_FOUND, request);
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleUserNotFound(HttpServletRequest request) {
+        return error(ErrorCode.USER_NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(DuplicateUserEmailException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateUserEmail(HttpServletRequest request) {
+        return error(ErrorCode.DUPLICATE_USER_EMAIL, request);
+    }
+
     @ExceptionHandler(InvalidContentPatchException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidPatch(HttpServletRequest request) {
         return error(ErrorCode.INVALID_CONTENT_PATCH, request);

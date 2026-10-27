@@ -1,0 +1,70 @@
+@baseUrl = http://localhost:8080
+@userEmail = day27.user@example.com
+@userId = 1
+
+### 1. Create a user (201). Set @userId above to the returned id before running later requests.
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Day27 User",
+  "email": "{{userEmail}}"
+}
+
+
+### 2. List users (200)
+GET {{baseUrl}}/api/users
+
+### 3. Read the created user (200)
+GET {{baseUrl}}/api/users/{{userId}}
+
+### 4. Duplicate email (409, DUPLICATE_USER_EMAIL)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Another User",
+  "email": "{{userEmail}}"
+}
+
+### 5. Invalid name and email (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": " ",
+  "email": "not-an-email"
+}
+
+### 6. Replace the user details (200)
+PUT {{baseUrl}}/api/users/{{userId}}
+Content-Type: application/json
+
+{
+  "name": "Updated User",
+  "email": "updated.day27.user@example.com"
+}
+
+### 7. Verify the updated user (200)
+GET {{baseUrl}}/api/users/{{userId}}
+
+### 8. Read a non-existent user (404, USER_NOT_FOUND)
+GET {{baseUrl}}/api/users/999999999
+
+### 9. Update a non-existent user (404, USER_NOT_FOUND)
+PUT {{baseUrl}}/api/users/999999999
+Content-Type: application/json
+
+{
+  "name": "Missing User",
+  "email": "missing.user@example.com"
+}
+
+### 10. Delete the created user (204)
+DELETE {{baseUrl}}/api/users/{{userId}}
+
+### 11. Read the deleted user (404, USER_NOT_FOUND)
+GET {{baseUrl}}/api/users/{{userId}}
+
+### 12. Delete a non-existent user (404, USER_NOT_FOUND)
+DELETE {{baseUrl}}/api/users/999999999
