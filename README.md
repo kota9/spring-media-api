@@ -266,3 +266,18 @@ Media 목록 응답 예시:
   "title": "Media 1"
 }
 ```
+
+## AOP 로깅
+
+Spring AOP로 서비스 메서드의 실행 전후와 경과 시간을 기록합니다. Aspect는 공통 로깅 기능을, Pointcut은 적용할 메서드를, Advice는 실행할 동작을 정의합니다. Spring은 Bean 프록시를 통해 이를 적용합니다.
+
+`LoggingAspect`의 `@Around` Advice는 `com.example.springstudy.service` 패키지의 메서드를 실행하고 성공·예외 로그를 남깁니다. 예외는 다시 전달하며 요청 값과 반환 객체는 기록하지 않습니다. 의존성은 Spring Boot 4용 `spring-boot-starter-aspectj`입니다.
+
+실행 및 테스트:
+
+```bash
+.\gradlew.bat bootRun
+.\gradlew.bat test
+```
+
+검증 결과: 전체 테스트 `BUILD SUCCESSFUL`; `GET /api/contents`는 `200 OK`와 AOP 시작·종료 로그, 존재하지 않는 ID 조회는 `404 CONTENT_NOT_FOUND`와 AOP 오류 로그를 확인했습니다.
