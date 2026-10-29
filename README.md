@@ -281,3 +281,7 @@ Spring AOP로 서비스 메서드의 실행 전후와 경과 시간을 기록합
 ```
 
 검증 결과: 전체 테스트 `BUILD SUCCESSFUL`; `GET /api/contents`는 `200 OK`와 AOP 시작·종료 로그, 존재하지 않는 ID 조회는 `404 CONTENT_NOT_FOUND`와 AOP 오류 로그를 확인했습니다.
+
+## Proxy 실습
+
+JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시를 비교하는 실습입니다. 클래스별 역할, 호출 흐름, 프록시 확인 방법과 테스트 결과는 [Proxy 실습 노트](docs/proxy-practice.md)를 참고하세요.
