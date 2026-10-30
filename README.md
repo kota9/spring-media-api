@@ -295,3 +295,11 @@ JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시�
 ```
 
 `readOnly = true`는 읽기 전용 힌트이며, DB 쓰기를 항상 차단하는 설정은 아닙니다.
+
+## Transaction Propagation 및 Isolation
+
+테스트 전용 H2 환경에서 `REQUIRED`의 공동 롤백, `REQUIRES_NEW`의 독립 커밋, `UnexpectedRollbackException`을 검증합니다. 별도 스레드와 Connection을 사용해 Dirty Read, Non-Repeatable Read, Phantom Read를 실험하고 네 가지 Isolation Level을 비교합니다.
+
+H2 실습에서는 Dirty Read가 발생했고, READ_COMMITTED에서 Non-Repeatable Read와 Phantom Read가 발생했습니다. REPEATABLE_READ에서는 반복 조회 값과 Phantom 조회 결과가 유지됐습니다.
+
+자세한 구현과 테스트 결과는 [Transaction 심화 실습 문서](docs/day32-transaction-advanced.md)를 참고하세요.
