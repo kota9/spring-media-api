@@ -285,3 +285,13 @@ Spring AOP로 서비스 메서드의 실행 전후와 경과 시간을 기록합
 ## Proxy 실습
 
 JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시를 비교하는 실습입니다. 클래스별 역할, 호출 흐름, 프록시 확인 방법과 테스트 결과는 [Proxy 실습 노트](docs/proxy-practice.md)를 참고하세요.
+
+## 트랜잭션
+
+테스트 전용 H2 인메모리 DB와 Spring JDBC로 `@Transactional`의 Commit, Runtime/Checked Exception Rollback, Proxy 및 Self Invocation, `readOnly` 동작을 검증합니다. 실습 코드는 `src/test/java/com/example/springstudy/transaction`에 있으며, 테스트 데이터는 정리됩니다.
+
+```bash
+.\gradlew.bat test --tests "com.example.springstudy.transaction.*"
+```
+
+`readOnly = true`는 읽기 전용 힌트이며, DB 쓰기를 항상 차단하는 설정은 아닙니다.
