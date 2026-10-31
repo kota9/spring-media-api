@@ -303,3 +303,7 @@ JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시�
 H2 실습에서는 Dirty Read가 발생했고, READ_COMMITTED에서 Non-Repeatable Read와 Phantom Read가 발생했습니다. REPEATABLE_READ에서는 반복 조회 값과 Phantom 조회 결과가 유지됐습니다.
 
 자세한 구현과 테스트 결과는 [Transaction 심화 실습 문서](docs/day32-transaction-advanced.md)를 참고하세요.
+
+## Spring Transaction Proxy와 경계
+
+Self Invocation이나 `new`로 직접 생성한 객체는 트랜잭션 Proxy를 거치지 않아 롤백이 적용되지 않을 수 있습니다. 트랜잭션 작업을 별도 Spring Service로 분리하고, Service 계층에서 여러 DB 변경을 하나의 업무 트랜잭션으로 묶는 방법을 테스트 전용 H2 환경에서 실습합니다. 정상 커밋과 예외 롤백 결과를 실제 DB 조회로 확인합니다.
