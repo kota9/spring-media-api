@@ -1,3 +1,8 @@
 spring:
   application:
     name: spring-media-api
+
+logging:
+  level:
+    org.springframework.transaction.interceptor: TRACE
+    org.springframework.jdbc.datasource.DataSourceTransactionManager: DEBUG

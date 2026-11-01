@@ -31,6 +31,12 @@ public class TransactionPracticeService {
         throw new IOException("Forced checked exception");
     }
 
+    @Transactional
+    public void createWithCheckedExceptionByDefault() throws IOException {
+        insert("checked-commit");
+        throw new IOException("Forced checked exception without rollbackFor");
+    }
+
     @Transactional(readOnly = true)
     public boolean checkReadOnlyTransaction() {
         return TransactionSynchronizationManager.isCurrentTransactionReadOnly();

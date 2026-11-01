@@ -3,6 +3,7 @@ package com.example.springstudy.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springstudy.domain.Comment;
 import com.example.springstudy.dto.CommentCreateRequest;
@@ -33,17 +34,20 @@ public class CommentService {
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
     }
 
+    @Transactional
     public Comment create(Long contentId, CommentCreateRequest request) {
         contentService.findById(contentId);
         userService.findById(request.userId());
         return commentRepository.save(contentId, request.userId(), request.body());
     }
 
+    @Transactional
     public Comment update(Long commentId, CommentUpdateRequest request) {
         findById(commentId);
         return commentRepository.update(commentId, request.body());
     }
 
+    @Transactional
     public void delete(Long commentId) {
         findById(commentId);
         commentRepository.deleteById(commentId);

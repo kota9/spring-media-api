@@ -3,6 +3,7 @@ package com.example.springstudy.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springstudy.domain.User;
 import com.example.springstudy.dto.UserRequest;
@@ -28,15 +29,18 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
     }
 
+    @Transactional
     public User create(UserRequest request) {
         return userRepository.save(request.name(), request.email());
     }
 
+    @Transactional
     public User update(Long userId, UserRequest request) {
         findById(userId);
         return userRepository.update(userId, request.name(), request.email());
     }
 
+    @Transactional
     public void delete(Long userId) {
         findById(userId);
         commentRepository.deleteByUserId(userId);

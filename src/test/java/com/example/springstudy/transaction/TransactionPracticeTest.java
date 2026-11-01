@@ -49,4 +49,11 @@ class TransactionPracticeTest {
 
         assertEquals(0, service.countRecords());
     }
+
+    @Test
+    void commitsDataWhenCheckedExceptionIsNotConfiguredForRollback() {
+        assertThrows(IOException.class, service::createWithCheckedExceptionByDefault);
+
+        assertEquals(1, service.countRecords());
+    }
 }

@@ -62,6 +62,8 @@ class TransactionBoundaryTest {
     void serviceBoundaryCommitsAllRowsAndRollsBackAllRowsOnFailure() {
         String successfulOrderId = newOrderId();
         String failedOrderId = newOrderId();
+        assertCounts(successfulOrderId, 0, 0, 0);
+        assertCounts(failedOrderId, 0, 0, 0);
 
         assertTrue(AopUtils.isAopProxy(boundaryService));
         assertFalse(TransactionSynchronizationManager.isActualTransactionActive());

@@ -3,6 +3,7 @@ package com.example.springstudy.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.springstudy.domain.Content;
 import com.example.springstudy.dto.ContentPatchRequest;
@@ -29,15 +30,18 @@ public class ContentService {
         return contentRepository.findById(id).orElseThrow(() -> new ContentNotFoundException(id));
     }
 
+    @Transactional
     public Content create(String title, String description) {
         return contentRepository.save(title, description);
     }
 
+    @Transactional
     public Content update(Long id, String title, String description) {
         findById(id);
         return contentRepository.update(id, title, description);
     }
 
+    @Transactional
     public Content patch(Long id, ContentPatchRequest request) {
         Content existing = findById(id);
         if (!request.hasTitle() && !request.hasDescription()) {
@@ -62,6 +66,7 @@ public class ContentService {
         return contentRepository.update(id, title, description);
     }
 
+    @Transactional
     public void delete(Long id) {
         findById(id);
         commentRepository.deleteByContentId(id);
