@@ -286,34 +286,20 @@ Spring AOP로 서비스 메서드의 실행 전후와 경과 시간을 기록합
 
 JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시를 비교하는 실습입니다. 클래스별 역할, 호출 흐름, 프록시 확인 방법과 테스트 결과는 [Proxy 실습 노트](docs/proxy-practice.md)를 참고하세요.
 
-## 트랜잭션
+## 트랜잭션 실습
 
-테스트 전용 H2 인메모리 DB와 Spring JDBC로 `@Transactional`의 Commit, Runtime/Checked Exception Rollback, Proxy 및 Self Invocation, `readOnly` 동작을 검증합니다. 실습 코드는 `src/test/java/com/example/springstudy/transaction`에 있으며, 테스트 데이터는 정리됩니다.
+테스트 전용 H2 데이터베이스와 Spring JDBC로 트랜잭션 동작을 확인합니다. 실습에서는 커밋과 예외별 롤백, `readOnly`, Self Invocation, 프록시 경계, 전파 옵션, 격리 수준을 다룹니다.
 
 ```bash
 .\gradlew.bat test --tests "com.example.springstudy.transaction.*"
 ```
 
-`readOnly = true`는 읽기 전용 힌트이며, DB 쓰기를 항상 차단하는 설정은 아닙니다.
+테스트 코드는 `src/test/java/com/example/springstudy/transaction`에 있습니다. 전파·격리 실습의 설명과 결과는 [Transaction 심화 실습 문서](docs/day32-transaction-advanced.md)를 참고하세요.
 
-## Transaction Propagation 및 Isolation
+기본 설정에서 `@Transactional`은 `RuntimeException`과 `Error`가 메서드 밖으로 전달될 때 롤백합니다. Checked Exception도 롤백하려면 `rollbackFor`를 지정해야 합니다. `readOnly = true`는 읽기 전용 힌트이며, DB 쓰기를 항상 차단하지는 않습니다.
 
-테스트 전용 H2 환경에서 `REQUIRED`의 공동 롤백, `REQUIRES_NEW`의 독립 커밋, `UnexpectedRollbackException`을 검증합니다. 별도 스레드와 Connection을 사용해 Dirty Read, Non-Repeatable Read, Phantom Read를 실험하고 네 가지 Isolation Level을 비교합니다.
+### API에서의 적용 범위
 
-H2 실습에서는 Dirty Read가 발생했고, READ_COMMITTED에서 Non-Repeatable Read와 Phantom Read가 발생했습니다. REPEATABLE_READ에서는 반복 조회 값과 Phantom 조회 결과가 유지됐습니다.
+회원·콘텐츠·댓글의 쓰기 메서드에는 `@Transactional`이 붙어 있지만, API 저장소는 메모리 기반입니다. 런타임에 JDBC DataSource와 TransactionManager를 사용하지 않으므로 이 어노테이션만으로 메모리 데이터의 롤백이 보장되지는 않습니다.
 
-자세한 구현과 테스트 결과는 [Transaction 심화 실습 문서](docs/day32-transaction-advanced.md)를 참고하세요.
-
-## Spring Transaction Proxy와 경계
-
-Self Invocation이나 `new`로 직접 생성한 객체는 트랜잭션 Proxy를 거치지 않아 롤백이 적용되지 않을 수 있습니다. 트랜잭션 작업을 별도 Spring Service로 분리하고, Service 계층에서 여러 DB 변경을 하나의 업무 트랜잭션으로 묶는 방법을 테스트 전용 H2 환경에서 실습합니다. 정상 커밋과 예외 롤백 결과를 실제 DB 조회로 확인합니다.
-
-## Transaction 적용
-
-회원, 콘텐츠, 댓글의 쓰기 작업은 Service 계층에서 `@Transactional`로 감쌌습니다. 컨트롤러는 요청과 응답을 다루고, 서비스는 여러 저장 작업을 하나의 업무 단위로 묶는 경계이기 때문입니다. 현재 회원·콘텐츠·댓글 Repository는 메모리 기반이며 애플리케이션 런타임에는 JDBC DataSource와 TransactionManager를 구성하지 않습니다. 따라서 이 API의 `@Transactional`은 실제 트랜잭션이나 메모리 데이터 Rollback을 보장하지 않습니다. 실제 Commit/Rollback은 테스트 전용 H2 DataSource와 TransactionManager를 이용해 `TransactionBoundaryService`의 세 저장 작업으로 검증합니다.
-
-`@Transactional`은 Spring 프록시를 통해 메서드 호출 앞뒤에 트랜잭션을 열고, 정상 종료하면 Commit하며 롤백 대상 예외가 밖으로 전파되면 Rollback합니다. Commit은 변경을 확정하고 Rollback은 트랜잭션 안 변경을 취소합니다. 기본 설정은 `RuntimeException`과 `Error`에 Rollback하며 Checked Exception은 기본적으로 Commit 대상입니다. Checked Exception까지 취소해야 할 때는 `@Transactional(rollbackFor = IOException.class)`처럼 지정할 수 있습니다.
-
-테스트 전용 H2 통합 테스트는 저장 전후 행 수를 확인합니다. 정상 호출에서 주문·항목·이력 세 행이 Commit되고, 세 행 저장 후 `RuntimeException`이 발생한 호출은 세 테이블 모두 행 수가 0으로 남아 Rollback됩니다. 별도의 실습 테스트에서 Checked Exception의 기본 동작과 `rollbackFor`, 예외를 잡고 다시 던지지 않을 때의 동작, Self Invocation으로 프록시를 우회하는 문제도 확인합니다.
-
-`spring-tx`는 서비스 코드의 `@Transactional` 사용에 필요해 애플리케이션 의존성에 두고, JDBC와 H2는 테스트 범위로 둡니다. `application.yml`의 트랜잭션 인터셉터 및 JDBC 트랜잭션 매니저 로그 설정은 테스트의 H2 환경에서 시작, Commit, Rollback을 확인하는 데 사용합니다. 실제 JDBC Repository로 전환할 때 DataSource와 TransactionManager를 구성하면 API 트랜잭션도 DB 작업에 적용됩니다.
+실제 DB 커밋과 롤백은 테스트 전용 H2 환경의 `TransactionBoundaryService`로 확인합니다. 정상 호출은 주문·항목·이력을 함께 저장하고, 저장 중 예외가 발생하면 세 테이블의 변경을 모두 롤백합니다.
