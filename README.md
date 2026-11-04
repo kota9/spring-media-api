@@ -303,3 +303,40 @@ JDK Dynamic Proxy를 직접 구현하고 Spring AOP의 JDK 및 CGLIB 프록시�
 회원·콘텐츠·댓글의 쓰기 메서드에는 `@Transactional`이 붙어 있지만, API 저장소는 메모리 기반입니다. 런타임에 JDBC DataSource와 TransactionManager를 사용하지 않으므로 이 어노테이션만으로 메모리 데이터의 롤백이 보장되지는 않습니다.
 
 실제 DB 커밋과 롤백은 테스트 전용 H2 환경의 `TransactionBoundaryService`로 확인합니다. 정상 호출은 주문·항목·이력을 함께 저장하고, 저장 중 예외가 발생하면 세 테이블의 변경을 모두 롤백합니다.
+# Day 38 — JPA와 영속성 컨텍스트 실습
+
+이 프로젝트는 Spring Boot 4.1.1, Java 21에서 Spring Data JPA starter가 제공하는 Jakarta Persistence API와 Hibernate 구현체를 사용합니다. `Member` 실습은 기존 API 도메인과 독립되어 있으며 Spring Data Repository를 사용하지 않습니다.
+
+## 핵심 개념
+
+- **ORM**은 객체와 관계형 데이터베이스의 테이블 사이를 매핑해 객체 중심 코드로 데이터를 다루는 방식입니다.
+- **JPA**는 Java 객체 관계 매핑과 EntityManager 동작을 정의하는 표준 명세입니다. **Hibernate**는 이 명세를 구현하며 SQL 생성, 상태 추적 등의 동작을 수행합니다.
+- **Entity**는 `@Entity`로 매핑한 영속 대상입니다. `Member`는 `members` 테이블의 `id`, `name`, `email` 열에 대응합니다.
+- **EntityManager**는 `persist`, `find`, `remove`, `flush` 등을 제공하는 API입니다. Spring의 `@PersistenceContext` 주입을 사용하며 직접 팩토리를 만들지 않습니다.
+- **Persistence Context**는 현재 트랜잭션에서 관리하는 Entity를 보관하고 변경 사항을 추적합니다.
+
+```java
+Member member = new Member("홍길동", "hong@example.com"); // 비영속
+entityManager.persist(member);                              // 영속
+member.changeEmail("new@example.com");                     // 변경 감지 대상
+entityManager.detach(member);                               // 준영속
+```
+
+Entity 생명주기는 비영속(아직 관리되지 않음), 영속(컨텍스트가 관리함), 준영속(detach/clear/close 등으로 관리가 끝남), 삭제(remove 예약) 상태로 설명할 수 있습니다. `detach(entity)`는 한 객체만 분리하고, `clear()`는 컨텍스트의 전체 Entity를 분리하며, `close()`는 EntityManager를 종료합니다.
+
+같은 컨텍스트에서 같은 식별자를 `find`하면 1차 캐시가 보유한 동일 Java 객체를 돌려줍니다. 영속 Entity의 필드 변경은 스냅샷과 비교되어 커밋 전 flush 때 UPDATE로 반영됩니다. `persist` 호출을 모아 두었다가 flush 시 SQL을 내보내는 것을 쓰기 지연이라 합니다. 단, `IDENTITY` 전략은 DB가 키를 생성해야 해서 INSERT가 `persist` 중 실행될 수 있습니다.
+
+**Flush는 영속성 컨텍스트의 SQL을 DB에 보내는 동기화이며 커밋은 아닙니다.** 트랜잭션은 flush 뒤에도 계속 활성화되고 rollback될 수 있습니다. Commit은 트랜잭션의 최종 성공을 확정합니다. 서비스의 예외 테스트는 Spring 트랜잭션 프록시 경계 밖으로 런타임 예외가 전파되어 rollback되는 것을 확인합니다.
+
+## H2 설정과 실습
+
+`application.yml`은 `jdbc:h2:mem:springdb`, `sa`/빈 비밀번호, Hibernate `create-drop`, SQL 로깅/포맷팅을 설정합니다. H2 Console은 `/h2-console`에서 활성화됩니다. 애플리케이션 실행 중 `http://localhost:8080/h2-console`에 접속해 JDBC URL `jdbc:h2:mem:springdb`와 사용자 `sa`를 입력하고 `SELECT * FROM MEMBERS;`로 확인할 수 있습니다. 메모리 DB는 애플리케이션이 종료되면 데이터가 사라집니다.
+
+`MemberService`는 `@PersistenceContext`로 EntityManager를 받아 저장/조회/수정/삭제를 수행합니다. 수정 메서드는 별도 update/save 호출 없이 변경 감지에 맡깁니다. 자세한 검증은 `MemberJpaIntegrationTest`에서 확인합니다.
+
+```powershell
+./gradlew test --tests com.example.springstudy.service.MemberJpaIntegrationTest
+./gradlew test
+```
+
+통합 테스트는 생성/저장, 조회, Dirty Checking, 삭제, 1차 캐시 동일성, `contains` 영속/준영속 판별, flush 후 DB 반영과 트랜잭션 유지, clear의 분리, 프록시 기반 rollback을 검증합니다. 테스트는 성공했으며 SQL 로그에서 Hibernate의 DDL 및 INSERT/SELECT/UPDATE/DELETE를 확인할 수 있습니다. `IDENTITY` INSERT는 키 반환을 위해 persist 시 실행될 수 있고, UPDATE/DELETE 및 나머지 변경 SQL은 flush 시점에 실행됩니다.

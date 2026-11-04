@@ -24,7 +24,11 @@ public class LoggingAspect {
             log.info("[AOP END] method={}, elapsed={}ms", method, elapsedMillis(startNanos));
             return result;
         } catch (Throwable exception) {
-            log.error("[AOP ERROR] method={}, elapsed={}ms", method, elapsedMillis(startNanos), exception);
+            log.warn("[AOP ERROR] method={}, elapsed={}ms, exception={} - {}",
+                    method,
+                    elapsedMillis(startNanos),
+                    exception.getClass().getSimpleName(),
+                    exception.getMessage());
             throw exception;
         }
     }
