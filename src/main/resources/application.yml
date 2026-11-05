@@ -13,6 +13,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  # show-sql / format_sql are configured above; use logging for readable SQL and bind values.
   h2:
     console:
       enabled: true
@@ -20,5 +21,7 @@ spring:
 
 logging:
   level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.transaction.interceptor: DEBUG
     org.springframework.jdbc.datasource.DataSourceTransactionManager: DEBUG
