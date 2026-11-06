@@ -52,7 +52,7 @@ Repository는 각각 SQL 실행과 테이블 접근을 담당합니다. Reposito
 
 `TransactionBoundaryService.createOrderSuccessfully(orderId)`는 세 Repository를 호출하고 정상 종료합니다. 세 행은 모두 커밋됩니다. `createOrderWithFailure(orderId)`도 세 INSERT를 수행한 뒤 RuntimeException을 던지며, 세 행 모두 롤백됩니다.
 
-`TransactionBoundaryTest`는 다음 사항을 함께 확인합니다.
+`TransactionBehaviorIntegrationTest`는 다음 사항을 함께 확인합니다.
 
 - Service가 AOP Proxy인지 확인
 - Service 메서드 실행 중 실제 트랜잭션이 활성 상태인지 확인
@@ -77,10 +77,8 @@ Repository는 각각 SQL 실행과 테이블 접근을 담당합니다. Reposito
 
 | 범위 | 결과 |
 |---|---|
-| Day 31: `TransactionPracticeTest`, `TransactionProxyTest`, `ReadOnlyTransactionTest` | BUILD SUCCESSFUL |
+| Day 31: `TransactionBehaviorIntegrationTest`, `SelfInvocationBadTest`, `SelfInvocationFixedTest` | BUILD SUCCESSFUL |
 | Day 32: `TransactionPropagationTest`, `TransactionIsolationTest` | BUILD SUCCESSFUL |
-| Day 33: `SelfInvocationBadTest`, `SelfInvocationFixedTest` | BUILD SUCCESSFUL |
-| Day 33: `TransactionBoundaryTest` | BUILD SUCCESSFUL |
 | 전체 `./gradlew test` | BUILD SUCCESSFUL |
 
 각 Day 33 테스트는 UUID 기반 키를 사용하며 `@AfterEach`에서 테스트 데이터를 정리합니다. 테스트 메서드 자체에는 `@Transactional`을 적용하지 않아 Service 트랜잭션의 실제 커밋 및 롤백을 조회할 수 있습니다.

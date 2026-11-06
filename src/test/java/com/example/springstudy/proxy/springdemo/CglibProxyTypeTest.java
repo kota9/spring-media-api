@@ -20,8 +20,6 @@ class CglibProxyTypeTest {
 
     @Test
     void createsCglibProxyAndRunsAdvice(CapturedOutput output) {
-        printProxyDetails();
-
         String result = proxyDemoService.execute("cglib");
 
         assertEquals("Executed: cglib", result);
@@ -32,10 +30,4 @@ class CglibProxyTypeTest {
         assertTrue(output.getAll().contains("[ProxyDemo AFTER] execute, elapsed="));
     }
 
-    private void printProxyDetails() {
-        System.out.println("Bean class: " + proxyDemoService.getClass().getName());
-        System.out.println("Target class: " + AopUtils.getTargetClass(proxyDemoService).getName());
-        System.out.println("JDK dynamic proxy: " + AopUtils.isJdkDynamicProxy(proxyDemoService));
-        System.out.println("CGLIB proxy: " + AopUtils.isCglibProxy(proxyDemoService));
-    }
 }

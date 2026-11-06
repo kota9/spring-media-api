@@ -89,7 +89,7 @@ DB마다 MVCC, 잠금, 스냅샷 구현이 다르므로 표준의 허용 현상�
 
 ## 4. Transaction Boundary
 
-실제 애플리케이션에서 트랜잭션 경계는 보통 하나의 비즈니스 작업을 완결하는 Service 메서드에 둡니다. 그 작업에 필요한 DB 변경을 묶고 메서드가 끝나면 커밋 또는 롤백합니다. 다른 Service를 호출해도 프록시를 통하면 같은 트랜잭션에 참여할 수 있습니다. 같은 객체 내부의 self-invocation은 프록시를 우회할 수 있습니다. Day 31의 [TransactionProxyTest](../src/test/java/com/example/springstudy/transaction/TransactionProxyTest.java)는 외부 프록시 호출과 self-invocation 차이를 확인합니다.
+실제 애플리케이션에서 트랜잭션 경계는 보통 하나의 비즈니스 작업을 완결하는 Service 메서드에 둡니다. 그 작업에 필요한 DB 변경을 묶고 메서드가 끝나면 커밋 또는 롤백합니다. 다른 Service를 호출해도 프록시를 통하면 같은 트랜잭션에 참여할 수 있습니다. 같은 객체 내부의 self-invocation은 프록시를 우회할 수 있습니다. [TransactionBehaviorIntegrationTest](../src/test/java/com/example/springstudy/transaction/TransactionBehaviorIntegrationTest.java)는 Proxy, readOnly, Commit/Rollback 및 다중 테이블 원자성을 확인하고, [SelfInvocationFixedTest](../src/test/java/com/example/springstudy/transaction/SelfInvocationFixedTest.java)는 별도 Bean Proxy를 통한 호출을 확인합니다.
 
 현재 운영 Service와 Repository는 메모리 기반이며 프로덕션 코드에서 `@Transactional`이나 외부 API 클라이언트를 찾지 못했습니다. 그러므로 운영용 트랜잭션 경계의 적절성이나 장시간 외부 호출 포함 여부를 이 프로젝트의 실제 DB 트랜잭션으로 평가할 수는 없습니다. 위 Service 트랜잭션 코드는 테스트 전용 학습 코드입니다.
 
@@ -100,7 +100,7 @@ DB 연동 시에는 DB 작업의 일관성이 필요한 최소 비즈니스 구�
 Day 31 Transaction 테스트:
 
 ```powershell
-.\gradlew.bat test --tests "com.example.springstudy.transaction.TransactionPracticeTest" --tests "com.example.springstudy.transaction.TransactionProxyTest" --tests "com.example.springstudy.transaction.ReadOnlyTransactionTest"
+.\gradlew.bat test --tests "com.example.springstudy.transaction.TransactionBehaviorIntegrationTest" --tests "com.example.springstudy.transaction.SelfInvocation*Test"
 ```
 
 Day 32 Propagation 및 Isolation 테스트:
