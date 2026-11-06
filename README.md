@@ -316,3 +316,39 @@ H2 메모리 데이터베이스와 설정은 `application.yml`에 있습니다. 
 ```powershell
 ./gradlew test --tests com.example.springstudy.service.MemberJpaIntegrationTest
 ```
+
+## Day 40: JPA Entity 설계
+
+Entity는 영속성 컨텍스트가 상태를 관리하는 객체이며, DTO는 API 요청과 응답처럼 계층 사이에서 데이터를 전달하는 객체입니다. Entity는 테이블 구조와 생명주기를 표현하고, DTO는 외부 계약에 맞게 필요한 데이터만 담습니다. 이번 실습의 영속 Entity는 기존 API용 `domain` 모델과 분리해 `com.example.springstudy.entity`에 두었습니다.
+
+Entity 설계 원칙은 기본 생성자를 `protected`로 두고, 무분별한 Setter 대신 의도가 드러나는 변경 메서드를 제공하며, `@Data`로 연관 객체까지 포함한 equals/hashCode/toString을 자동 생성하지 않는 것입니다. 연관관계는 필요한 쪽만 두고 `ManyToOne`은 기본 EAGER 대신 `LAZY`를 명시합니다.
+
+```java
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role;
+}
+```
+
+- `@Id`는 기본키 필드를 지정합니다. `@GeneratedValue`는 키 생성 전략을 선택합니다. `IDENTITY`는 DB 자동 증가 키에 위임하며, `SEQUENCE`는 DB 시퀀스를, `TABLE`은 별도 키 테이블을, `AUTO`는 구현체가 적합한 전략을 고릅니다.
+- `@Column`의 주요 속성은 DB 컬럼명(`name`), NULL 허용 여부(`nullable`), 유일성(`unique`), 길이(`length`)입니다.
+- `@Enumerated(EnumType.STRING)`은 Enum 상수 이름을 저장합니다. ORDINAL은 상수 순서가 바뀔 때 기존 데이터의 의미가 바뀔 수 있어 사용하지 않습니다.
+- `@ManyToOne(fetch = FetchType.LAZY)`는 다대일 연관관계를 필요할 때 읽도록 하고, `@JoinColumn`은 FK 컬럼명과 제약조건을 지정합니다. LAZY는 관계 데이터가 필요 없는 조회에서 불필요한 로딩을 줄입니다.
+
+이번 구조는 `Content → User(author)`와 `Content → Category`, `Comment → User(author)`와 `Comment → Content`의 단방향 다대일 관계입니다. FK는 각각 `contents.author_id`, `contents.category_id`, `comments.author_id`, `comments.content_id`입니다. Entity 사이 Cascade는 설정하지 않았습니다.
+
+`EntityMappingTest`는 H2에 저장하고 flush/clear 후 재조회하며 ID 생성, Enum 문자열, FK, 변경 감지, 유일성 제약조건을 검증합니다. 실행 방법:
+
+```powershell
+./gradlew test --tests com.example.springstudy.entity.EntityMappingTest
+```
