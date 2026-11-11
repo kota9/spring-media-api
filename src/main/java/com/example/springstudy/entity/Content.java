@@ -11,6 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.OneToMany;
+import org.hibernate.annotations.BatchSize;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "contents")
@@ -38,6 +42,10 @@ public class Content {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @BatchSize(size = 10)
+    @OneToMany(mappedBy = "content")
+    private List<Comment> comments = new ArrayList<>();
+
     protected Content() {
     }
 
@@ -55,6 +63,7 @@ public class Content {
     public ContentStatus getStatus() { return status; }
     public User getAuthor() { return author; }
     public Category getCategory() { return category; }
+    public List<Comment> getComments() { return comments; }
 
     public void changeTitle(String title) { this.title = title; }
     public void changeBody(String body) { this.body = body; }
