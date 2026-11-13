@@ -22,10 +22,12 @@ public class ContentService {
         this.commentRepository = commentRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Content> findAll() {
         return contentRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Content findById(Long id) {
         return contentRepository.findById(id).orElseThrow(() -> new ContentNotFoundException(id));
     }

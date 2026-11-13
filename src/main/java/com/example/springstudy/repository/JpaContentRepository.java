@@ -6,11 +6,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
 /** JPA 성능 실습 전용 조회 Repository. 운영 API의 인메모리 ContentRepository와 분리한다. */
 public interface JpaContentRepository extends JpaRepository<Content, Long> {
+
+    default List<Content> findAllOrdered() {
+        return findAll(Sort.by(Sort.Direction.ASC, "id"));
+    }
 
     @Query("select distinct c from Content c left join fetch c.comments")
     List<Content> findAllWithCommentsFetchJoin();

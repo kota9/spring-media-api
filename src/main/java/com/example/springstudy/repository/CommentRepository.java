@@ -1,61 +1,67 @@
 package com.example.springstudy.repository;
 
-import java.util.Comparator;
+import com.example.springstudy.domain.Comment;
+import com.example.springstudy.entity.Content;
+import com.example.springstudy.entity.User;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.springframework.stereotype.Repository;
-
-import com.example.springstudy.domain.Comment;
 
 @Repository
+@Transactional(readOnly = true)
 public class CommentRepository {
-    private final ConcurrentHashMap<Long, Comment> comments = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong();
+    private final JpaCommentRepository comments;
+    private final JpaContentRepository contents;
+    private final JpaUserRepository users;
+
+    public CommentRepository(JpaCommentRepository comments, JpaContentRepository contents, JpaUserRepository users) {
+        this.comments = comments;
+        this.contents = contents;
+        this.users = users;
+    }
 
     public List<Comment> findByContentId(Long contentId) {
-        return comments.values().stream()
-                .filter(comment -> comment.contentId().equals(contentId))
-                .sorted(Comparator.comparing(Comment::id))
-                .toList();
+        return comments.findByContent_IdOrderByIdAsc(contentId).stream()
+                .map(CommentRepository::toDomain).toList();
     }
 
-    public Optional<Comment> findById(Long commentId) {
-        return Optional.ofNullable(comments.get(commentId));
+    public Optional<Comment> findById(Long id) {
+        return comments.findById(id).map(CommentRepository::toDomain);
     }
 
+    @Transactional
     public Comment save(Long contentId, Long userId, String body) {
-        Comment comment = new Comment(idGenerator.incrementAndGet(), contentId, userId, body);
-        comments.put(comment.id(), comment);
-        return comment;
+        Content content = contents.getReferenceById(contentId);
+        User user = users.getReferenceById(userId);
+        return toDomain(comments.save(new com.example.springstudy.entity.Comment(body, user, content)));
     }
 
-    public Comment update(Long commentId, String body) {
-        Comment existing = comments.get(commentId);
-        Comment updated = new Comment(commentId, existing.contentId(), existing.userId(), body);
-        comments.put(commentId, updated);
-        return updated;
+    @Transactional
+    public Comment update(Long id, String body) {
+        com.example.springstudy.entity.Comment comment = comments.findById(id).orElseThrow();
+        comment.changeBody(body);
+        return toDomain(comment);
     }
 
-    public void deleteById(Long commentId) {
-        comments.remove(commentId);
+    @Transactional
+    public void deleteById(Long id) {
+        comments.deleteById(id);
     }
 
+    @Transactional
     public void deleteByContentId(Long contentId) {
-        comments.forEach((commentId, comment) -> {
-            if (comment.contentId().equals(contentId)) {
-                comments.remove(commentId, comment);
-            }
-        });
+        comments.deleteForContent(contentId);
     }
 
+    @Transactional
     public void deleteByUserId(Long userId) {
-        comments.forEach((commentId, comment) -> {
-            if (comment.userId().equals(userId)) {
-                comments.remove(commentId, comment);
-            }
-        });
+        comments.deleteForUser(userId);
+    }
+
+    private static Comment toDomain(com.example.springstudy.entity.Comment comment) {
+        return new Comment(comment.getId(), comment.getContent().getId(), comment.getAuthor().getId(),
+                comment.getBody());
     }
 }

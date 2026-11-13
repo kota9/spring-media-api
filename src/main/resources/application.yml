@@ -8,17 +8,15 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-  # show-sql / format_sql are configured above; use logging for readable SQL and bind values.
   h2:
     console:
       enabled: true
       path: /h2-console
-
 logging:
   level:
     org.hibernate.SQL: DEBUG

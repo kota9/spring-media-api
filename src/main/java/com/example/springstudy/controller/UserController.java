@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springstudy.dto.UserRequest;
+import com.example.springstudy.dto.UserCreateRequest;
 import com.example.springstudy.dto.UserResponse;
 import com.example.springstudy.service.UserService;
 
@@ -40,7 +41,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest request) {
         var created = userService.create(request);
         return ResponseEntity.created(URI.create("/api/users/" + created.id()))
                 .body(UserResponse.from(created));

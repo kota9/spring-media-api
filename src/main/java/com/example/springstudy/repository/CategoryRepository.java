@@ -1,41 +1,48 @@
 package com.example.springstudy.repository;
 
-import java.util.Comparator;
+import com.example.springstudy.domain.Category;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.springframework.stereotype.Repository;
-
-import com.example.springstudy.domain.Category;
 
 @Repository
+@Transactional(readOnly = true)
 public class CategoryRepository {
-    private final ConcurrentHashMap<Long, Category> categories = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong();
+    private final JpaCategoryRepository categories;
+
+    public CategoryRepository(JpaCategoryRepository categories) {
+        this.categories = categories;
+    }
 
     public List<Category> findAll() {
-        return categories.values().stream().sorted(Comparator.comparing(Category::id)).toList();
+        return categories.findAll().stream().map(CategoryRepository::toDomain).toList();
     }
 
-    public Optional<Category> findById(Long categoryId) {
-        return Optional.ofNullable(categories.get(categoryId));
+    public Optional<Category> findById(Long id) {
+        return categories.findById(id).map(CategoryRepository::toDomain);
     }
 
+    @Transactional
     public Category save(String name, String description) {
-        Category category = new Category(idGenerator.incrementAndGet(), name, description);
-        categories.put(category.id(), category);
-        return category;
+        return toDomain(categories.save(new com.example.springstudy.entity.Category(name, description)));
     }
 
-    public Category update(Long categoryId, String name, String description) {
-        Category category = new Category(categoryId, name, description);
-        categories.put(categoryId, category);
-        return category;
+    @Transactional
+    public Category update(Long id, String name, String description) {
+        com.example.springstudy.entity.Category category = categories.findById(id).orElseThrow();
+        category.changeName(name);
+        category.changeDescription(description);
+        return toDomain(category);
     }
 
-    public void deleteById(Long categoryId) {
-        categories.remove(categoryId);
+    @Transactional
+    public void deleteById(Long id) {
+        categories.deleteById(id);
+    }
+
+    private static Category toDomain(com.example.springstudy.entity.Category category) {
+        return new Category(category.getId(), category.getName(), category.getDescription());
     }
 }

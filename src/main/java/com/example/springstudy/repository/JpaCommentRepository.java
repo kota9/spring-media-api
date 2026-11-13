@@ -4,11 +4,26 @@ import com.example.springstudy.entity.Comment;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /** JPA 성능 실습 전용 Comment 조회 Repository. */
 public interface JpaCommentRepository extends JpaRepository<Comment, Long> {
+
+    List<Comment> findByContent_IdOrderByIdAsc(Long contentId);
+
+    @Modifying
+    @Transactional
+    @Query("delete from Comment c where c.content.id = :contentId")
+    void deleteForContent(@Param("contentId") Long contentId);
+
+    @Modifying
+    @Transactional
+    @Query("delete from Comment c where c.author.id = :userId")
+    void deleteForUser(@Param("userId") Long userId);
 
     @Query("select c from Comment c")
     List<Comment> findAllLazyForLab();

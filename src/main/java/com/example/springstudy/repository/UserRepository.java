@@ -1,52 +1,57 @@
 package com.example.springstudy.repository;
 
-import java.util.Comparator;
+import com.example.springstudy.domain.User;
+import com.example.springstudy.entity.UserRole;
+import com.example.springstudy.exception.DuplicateUserEmailException;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.springframework.stereotype.Repository;
-
-import com.example.springstudy.domain.User;
-import com.example.springstudy.exception.DuplicateUserEmailException;
 
 @Repository
+@Transactional(readOnly = true)
 public class UserRepository {
-    private final ConcurrentHashMap<Long, User> users = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong();
+    private final JpaUserRepository users;
+
+    public UserRepository(JpaUserRepository users) {
+        this.users = users;
+    }
 
     public List<User> findAll() {
-        return users.values().stream().sorted(Comparator.comparing(User::id)).toList();
+        return users.findAll().stream().map(UserRepository::toDomain).toList();
     }
 
     public Optional<User> findById(Long userId) {
-        return Optional.ofNullable(users.get(userId));
+        return users.findById(userId).map(UserRepository::toDomain);
     }
 
-    public synchronized User save(String name, String email) {
+    @Transactional
+    public User save(String name, String email, String passwordHash) {
         ensureEmailAvailable(email, null);
-        User user = new User(idGenerator.incrementAndGet(), name, email);
-        users.put(user.id(), user);
-        return user;
+        return toDomain(users.save(new com.example.springstudy.entity.User(email, name, passwordHash, UserRole.USER)));
     }
 
-    public synchronized User update(Long userId, String name, String email) {
+    @Transactional
+    public User update(Long userId, String name, String email) {
         ensureEmailAvailable(email, userId);
-        User user = new User(userId, name, email);
-        users.put(userId, user);
-        return user;
+        com.example.springstudy.entity.User user = users.findById(userId).orElseThrow();
+        user.changeName(name);
+        user.changeEmail(email);
+        return toDomain(user);
     }
 
+    @Transactional
     public void deleteById(Long userId) {
-        users.remove(userId);
+        users.deleteById(userId);
     }
 
     private void ensureEmailAvailable(String email, Long excludedUserId) {
-        boolean alreadyUsed = users.values().stream()
-                .anyMatch(user -> !user.id().equals(excludedUserId) && user.email().equals(email));
-        if (alreadyUsed) {
-            throw new DuplicateUserEmailException(email);
-        }
+        users.findByEmail(email).filter(existing -> !existing.getId().equals(excludedUserId))
+                .ifPresent(existing -> { throw new DuplicateUserEmailException(email); });
+    }
+
+    private static User toDomain(com.example.springstudy.entity.User user) {
+        return new User(user.getId(), user.getName(), user.getEmail());
     }
 }

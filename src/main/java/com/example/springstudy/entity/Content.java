@@ -27,7 +27,7 @@ public class Content {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(nullable = false, length = 10000)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String body;
 
     @Enumerated(EnumType.STRING)
@@ -35,11 +35,11 @@ public class Content {
     private ContentStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @BatchSize(size = 10)
@@ -55,6 +55,13 @@ public class Content {
         this.status = ContentStatus.DRAFT;
         this.author = author;
         this.category = category;
+    }
+
+    /** Constructor for the public Content API, which does not yet collect author/category fields. */
+    public Content(String title, String body) {
+        this.title = title;
+        this.body = body;
+        this.status = ContentStatus.DRAFT;
     }
 
     public Long getId() { return id; }

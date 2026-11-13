@@ -24,11 +24,13 @@ public class CommentService {
         this.userService = userService;
     }
 
+    @Transactional(readOnly = true)
     public List<Comment> findByContentId(Long contentId) {
         contentService.findById(contentId);
         return commentRepository.findByContentId(contentId);
     }
 
+    @Transactional(readOnly = true)
     public Comment findById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
