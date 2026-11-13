@@ -32,6 +32,12 @@ class JpaFetchPerformanceTest {
     @BeforeEach
     void setUp() {
         statistics = entityManagerFactory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        // The default H2 database is shared by Spring's cached test contexts. Keep this
+        // fetch-plan fixture independent of rows left by other tests or prior methods.
+        entityManager.createQuery("delete from Comment").executeUpdate();
+        entityManager.createQuery("delete from Content").executeUpdate();
+        entityManager.createQuery("delete from Category").executeUpdate();
+        entityManager.createQuery("delete from User").executeUpdate();
         User author = new User("nplus@example.com", "N+1 Author", "hashed", UserRole.USER);
         Category category = new Category("N+1 Category", "JPA fetching lab");
         entityManager.persist(author);

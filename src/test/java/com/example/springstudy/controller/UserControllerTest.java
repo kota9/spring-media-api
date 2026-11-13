@@ -29,7 +29,7 @@ class UserControllerTest {
         String email = uniqueEmail();
         MvcResult created = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\"}"))
+                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\",\"password\":\"test-password-123\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.name").value("John Doe"))
@@ -69,10 +69,10 @@ class UserControllerTest {
 
         String email = uniqueEmail();
         mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\"}"))
+                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\",\"password\":\"test-password-123\"}"))
                 .andExpect(status().isCreated());
         mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Jane Doe\",\"email\":\"" + email + "\"}"))
+                        .content("{\"name\":\"Jane Doe\",\"email\":\"" + email + "\",\"password\":\"test-password-123\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("DUPLICATE_USER_EMAIL"));
 
@@ -92,13 +92,13 @@ class UserControllerTest {
     void allowsUserToKeepOwnEmailOnUpdate() throws Exception {
         String email = uniqueEmail();
         MvcResult created = mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\"}"))
+                        .content("{\"name\":\"John Doe\",\"email\":\"" + email + "\",\"password\":\"test-password-123\"}"))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         mockMvc.perform(put("/api/users/{userId}", readId(created))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Jane Doe\",\"email\":\"" + email + "\"}"))
+                        .content("{\"name\":\"Jane Doe\",\"email\":\"" + email + "\",\"password\":\"test-password-123\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(email));
     }

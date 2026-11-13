@@ -8,7 +8,8 @@ Content-Type: application/json
 
 {
   "name": "Day27 User",
-  "email": "{{userEmail}}"
+  "email": "{{userEmail}}",
+  "password": "change-me-123"
 }
 
 
@@ -24,7 +25,8 @@ Content-Type: application/json
 
 {
   "name": "Another User",
-  "email": "{{userEmail}}"
+  "email": "{{userEmail}}",
+  "password": "change-me-123"
 }
 
 ### 5. Invalid name and email (400, INVALID_REQUEST)
@@ -33,7 +35,8 @@ Content-Type: application/json
 
 {
   "name": " ",
-  "email": "not-an-email"
+  "email": "not-an-email",
+  "password": "change-me-123"
 }
 
 ### 6. Replace the user details (200)

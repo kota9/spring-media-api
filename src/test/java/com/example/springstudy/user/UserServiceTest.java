@@ -11,11 +11,13 @@ import java.util.Optional;
 
 import com.example.springstudy.domain.User;
 import com.example.springstudy.dto.UserRequest;
+import com.example.springstudy.dto.UserCreateRequest;
 import com.example.springstudy.exception.DuplicateUserEmailException;
 import com.example.springstudy.exception.UserNotFoundException;
 import com.example.springstudy.repository.CommentRepository;
 import com.example.springstudy.repository.UserRepository;
 import com.example.springstudy.service.UserService;
+import com.example.springstudy.service.PasswordHasher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,9 @@ class UserServiceTest {
     @Mock
     private CommentRepository commentRepository;
 
+    @Mock
+    private PasswordHasher passwordHasher;
+
     @InjectMocks
     private UserService userService;
 
@@ -39,9 +44,10 @@ class UserServiceTest {
     @DisplayName("회원을 등록하고 생성된 회원 정보를 반환한다")
     void createUser() {
         // Given
-        UserRequest request = new UserRequest("Kim", "kim@example.com");
+        UserCreateRequest request = new UserCreateRequest("Kim", "kim@example.com", "password123");
         User savedUser = new User(1L, request.name(), request.email());
-        when(userRepository.save(request.name(), request.email())).thenReturn(savedUser);
+        when(passwordHasher.hash(request.password())).thenReturn("hashed-password");
+        when(userRepository.save(request.name(), request.email(), "hashed-password")).thenReturn(savedUser);
 
         // When
         User result = userService.create(request);
@@ -49,7 +55,7 @@ class UserServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(savedUser, result);
-        verify(userRepository).save(request.name(), request.email());
+        verify(userRepository).save(request.name(), request.email(), "hashed-password");
     }
 
     @Test
@@ -85,13 +91,14 @@ class UserServiceTest {
     @DisplayName("중복 이메일이면 저장소의 DuplicateUserEmailException을 전달한다")
     void throwsWhenEmailIsDuplicated() {
         // Given
-        UserRequest request = new UserRequest("Kim", "duplicate@example.com");
-        when(userRepository.save(request.name(), request.email()))
+        UserCreateRequest request = new UserCreateRequest("Kim", "duplicate@example.com", "password123");
+        when(passwordHasher.hash(request.password())).thenReturn("hashed-password");
+        when(userRepository.save(request.name(), request.email(), "hashed-password"))
                 .thenThrow(new DuplicateUserEmailException(request.email()));
 
         // When / Then
         assertThrows(DuplicateUserEmailException.class, () -> userService.create(request));
-        verify(userRepository).save(request.name(), request.email());
+        verify(userRepository).save(request.name(), request.email(), "hashed-password");
     }
 
     @Test
