@@ -35,11 +35,11 @@ public class Content {
     private ContentStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @BatchSize(size = 10)
@@ -55,13 +55,6 @@ public class Content {
         this.status = ContentStatus.DRAFT;
         this.author = author;
         this.category = category;
-    }
-
-    /** Constructor for the public Content API, which does not yet collect author/category fields. */
-    public Content(String title, String body) {
-        this.title = title;
-        this.body = body;
-        this.status = ContentStatus.DRAFT;
     }
 
     public Long getId() { return id; }

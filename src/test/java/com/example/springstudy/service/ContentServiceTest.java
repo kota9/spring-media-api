@@ -40,15 +40,15 @@ class ContentServiceTest {
         String title = "Spring Test";
         String description = "Mockito unit test";
         Content savedContent = new Content(1L, title, description);
-        when(contentRepository.save(title, description)).thenReturn(savedContent);
+        when(contentRepository.save(title, description, 4L, 7L)).thenReturn(savedContent);
 
         // When
-        Content result = contentService.create(title, description);
+        Content result = contentService.create(title, description, 4L, 7L);
 
         // Then
         assertNotNull(result);
         assertEquals(savedContent, result);
-        verify(contentRepository).save(title, description);
+        verify(contentRepository).save(title, description, 4L, 7L);
     }
 
     @Test

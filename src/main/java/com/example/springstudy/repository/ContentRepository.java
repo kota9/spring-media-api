@@ -8,7 +8,7 @@ import com.example.springstudy.domain.Content;
 public interface ContentRepository {
     List<Content> findAll();
     Optional<Content> findById(Long id);
-    Content save(String title, String description);
+    Content save(String title, String description, Long authorId, Long categoryId);
     Content update(Long id, String title, String description);
     void deleteById(Long id);
 }

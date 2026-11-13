@@ -33,8 +33,8 @@ public class ContentService {
     }
 
     @Transactional
-    public Content create(String title, String description) {
-        return contentRepository.save(title, description);
+    public Content create(String title, String description, Long authorId, Long categoryId) {
+        return contentRepository.save(title, description, authorId, categoryId);
     }
 
     @Transactional

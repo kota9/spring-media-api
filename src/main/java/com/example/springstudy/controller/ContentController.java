@@ -48,7 +48,8 @@ public class ContentController {
         if (request == null) {
             throw new InvalidContentPatchException("요청 본문은 JSON 객체여야 합니다.");
         }
-        Content created = contentService.create(request.title(), request.description());
+        Content created = contentService.create(
+                request.title(), request.description(), request.authorId(), request.categoryId());
         return ResponseEntity.created(URI.create("/api/contents/" + created.id()))
                 .body(ContentResponse.from(created));
     }

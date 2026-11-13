@@ -34,7 +34,8 @@ class MySqlPersistenceIntegrationTest {
         String suffix = UUID.randomUUID().toString();
         User user = users.save("MySQL test", "mysql-test-" + suffix + "@example.com");
         Category category = categories.save("MySQL test " + suffix, "Persistence test category");
-        Content content = contents.save("MySQL persistence", "Persisted description " + suffix);
+        Content content = contents.save(
+                "MySQL persistence", "Persisted description " + suffix, user.id(), category.id());
         Comment comment = null;
         try {
             comment = comments.save(content.id(), user.id(), "Persisted comment " + suffix);

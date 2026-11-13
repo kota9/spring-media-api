@@ -71,7 +71,7 @@ class ContentIntegrationTest {
         assertTrue(environment.getProperty("spring.datasource.url").startsWith("jdbc:h2:mem:"));
 
         // When
-        Content created = contentService.create("Integration test", "Saved in H2");
+        Content created = contentService.create("Integration test", "Saved in H2", 1L, 1L);
         createdContentId = created.id();
         Content found = contentService.findById(createdContentId);
 
@@ -124,7 +124,7 @@ class ContentIntegrationTest {
         }
 
         @Override
-        public Content save(String title, String description) {
+        public Content save(String title, String description, Long authorId, Long categoryId) {
             long id = idGenerator.incrementAndGet();
             jdbcTemplate.update("INSERT INTO contents (id, title, description) VALUES (?, ?, ?)",
                     id, title, description);

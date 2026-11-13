@@ -1,6 +1,8 @@
 package com.example.springstudy.repository;
 
 import com.example.springstudy.domain.Content;
+import com.example.springstudy.exception.UserNotFoundException;
+import com.example.springstudy.exception.CategoryNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +13,14 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class JpaContentRepositoryAdapter implements ContentRepository {
     private final JpaContentRepository contents;
+    private final JpaUserRepository users;
+    private final JpaCategoryRepository categories;
 
-    public JpaContentRepositoryAdapter(JpaContentRepository contents) {
+    public JpaContentRepositoryAdapter(
+            JpaContentRepository contents, JpaUserRepository users, JpaCategoryRepository categories) {
         this.contents = contents;
+        this.users = users;
+        this.categories = categories;
     }
 
     @Override
@@ -28,8 +35,11 @@ public class JpaContentRepositoryAdapter implements ContentRepository {
 
     @Override
     @Transactional
-    public Content save(String title, String description) {
-        return toDomain(contents.save(new com.example.springstudy.entity.Content(title, description)));
+    public Content save(String title, String description, Long authorId, Long categoryId) {
+        var author = users.findById(authorId).orElseThrow(() -> new UserNotFoundException(authorId));
+        var category = categories.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        return toDomain(contents.save(new com.example.springstudy.entity.Content(title, description, author, category)));
     }
 
     @Override

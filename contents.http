@@ -1,85 +1,84 @@
-### API base URL. Start the Spring Boot application before running these requests.
 @baseUrl = http://localhost:8080
 
-### 1. Create content. Copy the returned id into @contentId below.
-POST {{baseUrl}}/api/contents
+### Run all requests in this file from top to bottom to create the required data and test the content endpoints.
+### Create category first (use generated ID for content creation)
+POST {{baseUrl}}/api/categories
 Content-Type: application/json
 
 {
-  "title": "REST API 학습",
-  "description": "Spring Boot CRUD 구현"
+  "name": "content-category-{{$timestamp}}",
+  "description": "Category for content API example"
 }
+> {% client.global.set("categoryId", response.body.id); %}
 
-### Set this value to the id from the create response before running the remaining requests.
-@contentId = 2
+### Create author first (use generated ID for content creation)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
 
-### 2. List all content
+{
+  "name": "Content API author",
+  "email": "content-author-{{$timestamp}}@example.com",
+  "password": "change-me-123"
+}
+> {% client.global.set("authorId", response.body.id); %}
+
+### Create content (201); subsequent requests use generated ID
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{"title":"REST API practice","description":"Spring Boot CRUD","authorId":{{authorId}},"categoryId":{{categoryId}}}
+> {% client.global.set("contentId", response.body.id); %}
+
+### List contents (200)
 GET {{baseUrl}}/api/contents
 
-### 3. Read one content
+### Read content (200)
 GET {{baseUrl}}/api/contents/{{contentId}}
 
-### 4. Replace both fields (PUT requires title and description)
+### Replace title and description (PUT requires both, 200)
 PUT {{baseUrl}}/api/contents/{{contentId}}
 Content-Type: application/json
 
-{
-  "title": "REST API 전체 수정",
-  "description": "PUT으로 모든 필드를 교체합니다"
-}
+{"title":"Updated REST API","description":"Updated description"}
 
-### 5. Update only the title (omitted description keeps its previous value)
+### Patch title only (200)
 PATCH {{baseUrl}}/api/contents/{{contentId}}
 Content-Type: application/json
 
-{
-  "title": "PATCH 제목만 변경"
-}
+{"title":"Patched title"}
 
-### 6. Confirm the description was preserved by PATCH
-GET {{baseUrl}}/api/contents/{{contentId}}
+### Empty patch (400, INVALID_CONTENT_PATCH)
+PATCH {{baseUrl}}/api/contents/{{contentId}}
+Content-Type: application/json
 
-### 7. Delete content (204 response has no body)
-DELETE {{baseUrl}}/api/contents/{{contentId}}
+{}
 
-### 8. Missing ID returns 404 with a JSON error body
+### Blank title (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{"title":" ","description":"Description","authorId":{{authorId}},"categoryId":{{categoryId}}}
+
+### Missing description (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{"title":"Missing description","authorId":{{authorId}},"categoryId":{{categoryId}}}
+
+### Missing authorId (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{"title":"Missing author","description":"Description","categoryId":{{categoryId}}}
+
+### Missing categoryId (400, INVALID_REQUEST)
+POST {{baseUrl}}/api/contents
+Content-Type: application/json
+
+{"title":"Missing category","description":"Description","authorId":{{authorId}}}
+
+### Missing content (404, CONTENT_NOT_FOUND)
 GET {{baseUrl}}/api/contents/999999999
 
-### 9. Blank title returns 400 with a JSON error body
-POST {{baseUrl}}/api/contents
-Content-Type: application/json
-
-{
-  "title": "   ",
-  "description": "제목 검증 오류"
-}
-
-### PATCH rules: omit unchanged fields; explicit null and an empty patch return 400.
-### Requests run in order; create a fresh content and update @contentId before rerunning after delete.
-
-### 10. Validation failure: blank title returns VALIDATION_ERROR and errors.title
-POST {{baseUrl}}/api/contents
-Content-Type: application/json
-
-{
-  "title": "   ",
-  "description": "설명"
-}
-
-### 11. Validation failure: title longer than 100 characters returns 400
-POST {{baseUrl}}/api/contents
-Content-Type: application/json
-
-{
-  "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "description": "설명"
-}
-
-### 12. Normal valid content request returns 201
-POST {{baseUrl}}/api/contents
-Content-Type: application/json
-
-{
-  "title": "Validation 정상 요청",
-  "description": "필수 내용"
-}
+### Delete content (204)
+DELETE {{baseUrl}}/api/contents/{{contentId}}

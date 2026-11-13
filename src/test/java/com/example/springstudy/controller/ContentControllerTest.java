@@ -72,14 +72,14 @@ class ContentControllerTest {
 
     @Test
     void createsContentAndReturnsLocationHeader() throws Exception {
-        given(contentService.create("New content", DESCRIPTION))
+        given(contentService.create("New content", DESCRIPTION, 9L, 12L))
                 .willReturn(new Content(7L, "New content", DESCRIPTION));
 
         mockMvc.perform(post(CONTENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"title":"New content","description":"Description"}
+                                {"title":"New content","description":"Description","authorId":9,"categoryId":12}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -87,7 +87,7 @@ class ContentControllerTest {
                 .andExpect(jsonPath("$.id").value(7))
                 .andExpect(jsonPath("$.title").value("New content"));
 
-        verify(contentService).create("New content", DESCRIPTION);
+        verify(contentService).create("New content", DESCRIPTION, 9L, 12L);
     }
 
     @Test
